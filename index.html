@@ -974,14 +974,12 @@
     });
   }
 
-  // Cloudflare Worker endpoint.
-  // Selepas deploy worker-shortener.js di Cloudflare, tukar URL di bawah
-  // kepada URL workers.dev anda, contoh:
-  // https://halo-qr-shortener.nama-anda.workers.dev
-  const SHORTENER_API_URL = 'https://halo-qr-shortener.syedhalimz.workers.dev/';
+  // Cloudflare Worker endpoint — configured for this GitHub Pages site.
+  // Do not replace this unless the Worker domain changes.
+  const SHORTENER_API_URL = 'https://halo-qr-shortener.syedhalimz.workers.dev';
 
   async function isgdShorten(longUrl, slug){
-    if(SHORTENER_API_URL.includes('https://halo-qr-shortener.syedhalimz.workers.dev/')){
+    if(SHORTENER_API_URL.includes('REPLACE-WITH-YOUR-WORKER')){
       throw new Error('Cloudflare Worker belum dikonfigurasi. Tukar SHORTENER_API_URL dalam index.html kepada URL workers.dev anda.');
     }
 
