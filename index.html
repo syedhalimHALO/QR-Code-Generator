@@ -257,7 +257,7 @@
 
   .toggle-grid{
     display:grid;
-    grid-template-columns:repeat(2, 1fr);
+    grid-template-columns:1fr;
     gap:10px;
     margin-bottom:20px;
   }
@@ -378,32 +378,16 @@
             <svg viewBox="0 0 24 24"><use href="#icon-link"></use></svg>
             <span>Custom Link</span>
           </button>
-          <button type="button" class="toggle-tile" id="expirationToggle" aria-pressed="false">
-            <svg viewBox="0 0 24 24"><use href="#icon-calendar"></use></svg>
-            <span>Tetapkan Tamat Tempoh</span>
-          </button>
         </div>
 
         <div class="field" id="customLinkField" hidden>
           <label class="field-label" for="customSlugInput">Custom Link</label>
           <div class="prefixed-input">
-            <span class="prefix">workers.dev/</span>
+            <span class="prefix" id="shortDomainPrefix">halo-qr-shortener.syedhalimz.workers.dev/</span>
             <input type="text" id="customSlugInput" placeholder="promo_jun_2026">
           </div>
           <p class="field-help">5–30 aksara — huruf, nombor &amp; underscore sahaja (tiada sengkang -).</p>
         </div>
-
-        <div class="field-row" id="expirationFields" hidden>
-          <div class="field">
-            <label class="field-label" for="startDateInput">Tarikh Mula</label>
-            <input type="date" id="startDateInput" class="form-control">
-          </div>
-          <div class="field">
-            <label class="field-label" for="endDateInput">Tarikh Tamat</label>
-            <input type="date" id="endDateInput" class="form-control">
-          </div>
-        </div>
-        <p class="field-help" id="expiryNote" hidden>Nota: pautan yang dipendekkan tetap aktif selepas tarikh tamat — tarikh ini untuk rekod status dalam senarai di bawah sahaja, bukan sekatan akses sebenar.</p>
 
         <div class="field">
           <button type="button" id="shortenBtn" class="btn-primary">PENDEKKAN SEKARANG</button>
@@ -885,20 +869,12 @@
   });
 
   // ---------- Pemendek Pautan (URL Shortener) ----------
-  // Guna is.gd punya API secara terus dari pelayar (teknik JSONP, secara rasmi
-  // disokong oleh is.gd untuk kegunaan client-side). Ini perkhidmatan pihak
-  // ketiga — URL yang nak dipendekkan akan dihantar ke is.gd untuk proses
-  // shortening sebenar (berbeza dengan penjana QR di atas yang 100% tempatan).
+  // URL pendek dijana oleh Cloudflare Worker dan disimpan dalam Workers KV.
   const longUrlInput = document.getElementById('longUrlInput');
   const shortenBtn = document.getElementById('shortenBtn');
   const customLinkToggle = document.getElementById('customLinkToggle');
-  const expirationToggle = document.getElementById('expirationToggle');
   const customLinkField = document.getElementById('customLinkField');
-  const expirationFields = document.getElementById('expirationFields');
-  const expiryNote = document.getElementById('expiryNote');
   const customSlugInput = document.getElementById('customSlugInput');
-  const startDateInput = document.getElementById('startDateInput');
-  const endDateInput = document.getElementById('endDateInput');
   const shortenStatus = document.getElementById('shortenStatus');
   const shortenResult = document.getElementById('shortenResult');
   const resultLink = document.getElementById('resultLink');
@@ -918,9 +894,6 @@
   }
 
   customLinkToggle.addEventListener('click', () => toggleTile(customLinkToggle, customLinkField));
-  expirationToggle.addEventListener('click', () => toggleTile(expirationToggle, expirationFields, (on) => {
-    expiryNote.hidden = !on;
-  }));
 
   function loadHistory(){
     try{
@@ -932,23 +905,12 @@
     try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); }catch(e){ /* storan penuh/disekat */ }
   }
 
-  function computeStatus(startDate, endDate){
-    if(!startDate && !endDate) return { label:'Tiada Tarikh Luput', cls:'neutral' };
-    const today = new Date(); today.setHours(0,0,0,0);
-    const start = startDate ? new Date(startDate + 'T00:00:00') : null;
-    const end = endDate ? new Date(endDate + 'T23:59:59') : null;
-    if(start && today < start) return { label:'Belum Bermula', cls:'pending' };
-    if(end && today > end) return { label:'Tamat Tempoh', cls:'expired' };
-    return { label:'Aktif', cls:'active' };
-  }
-
   function renderHistory(){
     const list = loadHistory();
     if(!list.length){ historySection.hidden = true; return; }
     historySection.hidden = false;
     historyList.innerHTML = '';
     list.slice().reverse().forEach((item) => {
-      const status = computeStatus(item.startDate, item.endDate);
       const row = document.createElement('div');
       row.className = 'history-item';
       const shortLabel = item.shortUrl.replace(/^https?:\/\//, '');
@@ -956,10 +918,8 @@
       row.innerHTML =
         '<div class="history-main">' +
           '<a href="' + item.shortUrl + '" target="_blank" rel="noopener" class="history-link">' + shortLabel + '</a>' +
-          '<span class="badge badge-' + status.cls + '">' + status.label + '</span>' +
         '</div>' +
-        '<div class="history-sub">' + longPreview + '</div>' +
-        (item.startDate || item.endDate ? '<div class="history-dates">' + (item.startDate || '—') + ' → ' + (item.endDate || '—') + '</div>' : '');
+        '<div class="history-sub">' + longPreview + '</div>';
       const delBtn = document.createElement('button');
       delBtn.type = 'button';
       delBtn.className = 'history-del';
@@ -976,7 +936,21 @@
 
   // Cloudflare Worker URL shortener — configured for this GitHub Pages site.
   // Do not replace this unless the Worker domain changes.
-  const SHORTENER_API_URL = 'https://halo-qr-shortener.syedhalimz.workers.dev';
+  // CURRENT:
+  // const SHORTENER_API_URL = 'https://halo-qr-shortener.syedhalimz.workers.dev';
+  //
+  // AFTER CUSTOM DOMAIN IS READY, change only this line to:
+  // const SHORTENER_API_URL = 'https://go.halotelco.com';
+  const SHORTENER_API_URL = 'https://go.halotelco-links.workers.dev';
+
+  const shortDomainPrefix = document.getElementById('shortDomainPrefix');
+  if(shortDomainPrefix){
+    try{
+      shortDomainPrefix.textContent = new URL(SHORTENER_API_URL).host + '/';
+    }catch(e){
+      shortDomainPrefix.textContent = SHORTENER_API_URL.replace(/^https?:\/\//, '').replace(/\/$/, '') + '/';
+    }
+  }
 
   async function shortenWithWorker(longUrl, slug){
     if(SHORTENER_API_URL.includes('REPLACE-WITH-YOUR-WORKER')){
@@ -1025,16 +999,6 @@
       }
     }
 
-    let startDate = '', endDate = '';
-    if(expirationToggle.getAttribute('aria-pressed') === 'true'){
-      startDate = startDateInput.value;
-      endDate = endDateInput.value;
-      if(startDate && endDate && endDate < startDate){
-        shortenStatus.textContent = 'Tarikh tamat kena selepas tarikh mula.';
-        return;
-      }
-    }
-
     shortenBtn.disabled = true;
     shortenBtn.textContent = 'MEMPROSES…';
 
@@ -1048,7 +1012,6 @@
       list.push({
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
         shortUrl, longUrl, slug: slug || null,
-        startDate: startDate || null, endDate: endDate || null,
         createdAt: new Date().toISOString()
       });
       saveHistory(list);
