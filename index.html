@@ -502,7 +502,7 @@
       </section>
     </main>
 
-    <p class="privacy-note">Penjanaan QR berlaku terus dalam pelayar. Untuk fungsi pemendek pautan, URL dihantar melalui server website anda ke perkhidmatan is.gd/v.gd.</p>
+    <p class="privacy-note">Penjanaan QR berlaku terus dalam pelayar. Untuk fungsi pemendek pautan, URL dihantar melalui Cloudflare Worker ke perkhidmatan is.gd/v.gd.</p>
   </div>
 
 <script>
@@ -974,23 +974,33 @@
     });
   }
 
+  // Cloudflare Worker endpoint.
+  // Selepas deploy worker-shortener.js di Cloudflare, tukar URL di bawah
+  // kepada URL workers.dev anda, contoh:
+  // https://halo-qr-shortener.nama-anda.workers.dev
+  const SHORTENER_API_URL = 'https://halo-qr-shortener.syedhalimz.workers.dev/';
+
   async function isgdShorten(longUrl, slug){
+    if(SHORTENER_API_URL.includes('https://halo-qr-shortener.syedhalimz.workers.dev/')){
+      throw new Error('Cloudflare Worker belum dikonfigurasi. Tukar SHORTENER_API_URL dalam index.html kepada URL workers.dev anda.');
+    }
+
     let response;
     try{
-      response = await fetch('shorten.php', {
+      response = await fetch(SHORTENER_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: longUrl, slug: slug || '' })
       });
     }catch(err){
-      throw new Error('Tidak dapat menghubungi shorten.php. Pastikan fail HTML dan shorten.php berada dalam domain/folder yang sama dan website dibuka melalui http:// atau https://, bukan file://.');
+      throw new Error('Tidak dapat menghubungi Cloudflare Worker. Semak URL Worker dan pastikan Worker sudah Deploy.');
     }
 
     let data;
     try{
       data = await response.json();
     }catch(err){
-      throw new Error('Server memulangkan respons yang tidak sah. Semak sama ada PHP aktif pada hosting anda.');
+      throw new Error('Cloudflare Worker memulangkan respons yang tidak sah.');
     }
 
     if(!response.ok || !data.shorturl){
