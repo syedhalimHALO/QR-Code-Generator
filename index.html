@@ -361,16 +361,16 @@
       <img class="header-logo" src="qr code image.png" alt="Logo" onerror="this.style.display='none'">
       <div class="eyebrow">QR Generator | Created by Syed Halim</div>
       <h1 class="headline">Shorten your link, then generate your QR — all in one place.</h1>
-      <p class="sub">Pautan, Wi-Fi, vCard, WhatsApp, e-mel dan banyak lagi, semua diproses terus dalam pelayar anda.</p>
+      <p class="sub">This system was developed to simplify daily workflows for Halo Telco staff, enabling greater efficiency, productivity, and effectiveness.</p>
     </header>
 
     <main class="workshop">
       <section class="console shortener" id="shortenerSection">
-        <span class="section-label">Pemendek Pautan (URL Shortener)</span>
+        <span class="section-label">URL Shortener</span>
 
         <div class="field">
-          <label class="field-label" for="longUrlInput">Tampal URL Panjang</label>
-          <input type="text" id="longUrlInput" class="form-control" placeholder="https://laman-anda.com/kempen-pemasaran-yang-panjang">
+          <label class="field-label" for="longUrlInput">Enter your long URL below to create a shorter link.</label>
+          <input type="text" id="longUrlInput" class="form-control" placeholder="https://put-your-web-address-here">
         </div>
 
         <div class="toggle-grid" id="toggleGrid">
@@ -390,7 +390,7 @@
         </div>
 
         <div class="field">
-          <button type="button" id="shortenBtn" class="btn-primary">PENDEKKAN SEKARANG</button>
+          <button type="button" id="shortenBtn" class="btn-primary">SHORTEN URL</button>
           <div class="status-msg" id="shortenStatus" role="status" aria-live="polite"></div>
         </div>
 
@@ -403,7 +403,7 @@
         </div>
 
         <div class="history" id="historySection" hidden>
-          <span class="section-label">Riwayat Pautan Pendek</span>
+          <span class="section-label">URL Shorten History</span>
           <div id="historyList"></div>
         </div>
       </section>
@@ -418,7 +418,7 @@
 
         <div class="field-row">
           <div class="field">
-            <label class="field-label" for="qrSize">Saiz</label>
+            <label class="field-label" for="qrSize">Size</label>
             <select id="qrSize" class="form-control">
               <option value="200">Kecil — 200px</option>
               <option value="280" selected>Sederhana — 280px</option>
@@ -426,7 +426,7 @@
             </select>
           </div>
           <div class="field">
-            <label class="field-label" for="qrEcc">Ketahanan</label>
+            <label class="field-label" for="qrEcc">Error Correction Level</label>
             <select id="qrEcc" class="form-control">
               <option value="L">L — Rendah (7%)</option>
               <option value="M" selected>M — Sederhana (15%)</option>
@@ -437,18 +437,18 @@
         </div>
         <div class="field-row">
           <div class="field">
-            <label class="field-label" for="qrDark">Warna Kod</label>
+            <label class="field-label" for="qrDark">Color Code</label>
             <input type="color" id="qrDark" class="color-control" value="#14161A">
           </div>
           <div class="field">
-            <label class="field-label" for="qrLight">Warna Latar</label>
+            <label class="field-label" for="qrLight">Background Color</label>
             <input type="color" id="qrLight" class="color-control" value="#ffffff">
           </div>
         </div>
         <div class="field">
           <label class="field-checkbox">
             <input type="checkbox" id="logoToggle">
-            <span>Tambah logo di tengah QR</span>
+            <span>Add a logo to the center of the QR code.</span>
           </label>
         </div>
         <div class="field" id="logoField" hidden>
@@ -472,7 +472,7 @@
 
         <div class="empty-state" id="emptyState">
           <div class="ghost-qr"></div>
-          <p>Kod QR anda akan muncul di sini. Isi maklumat di sebelah kiri dan tekan "GENERATE QR".</p>
+          <p>Your QR code will appear here. Fill in the details on the left and click “GENERATE QR.”</p>
         </div>
 
         <div class="qr-frame" id="qrFrame" hidden>
@@ -486,27 +486,27 @@
       </section>
     </main>
 
-    <p class="privacy-note">Penjanaan QR berlaku terus dalam pelayar. Pautan pendek disimpan dan dialihkan melalui Cloudflare Worker anda sendiri.</p>
+    <p class="privacy-note">QR codes are generated directly in your browser. Short links are stored and redirected through your own Cloudflare Worker.</p>
   </div>
 
 <script>
   const TYPE_LIST = [
-    { id:'url', label:'URL / Pautan', icon:'link' },
-    { id:'text', label:'Teks', icon:'text' },
+    { id:'url', label:'URL / Link', icon:'link' },
+    { id:'text', label:'Text', icon:'text' },
     { id:'wifi', label:'Wi-Fi', icon:'wifi' },
     { id:'vcard', label:'vCard', icon:'card' },
     { id:'email', label:'E-mel', icon:'mail' },
     { id:'phone', label:'Panggilan Telefon', icon:'phone' },
     { id:'whatsapp', label:'WhatsApp', icon:'chat' },
     { id:'telegram', label:'Telegram', icon:'send' },
-    { id:'map', label:'Lokasi / Peta', icon:'pin' },
+    { id:'map', label:'Location / Map', icon:'pin' },
     { id:'youtube', label:'YouTube', icon:'play' },
     { id:'instagram', label:'Instagram', icon:'camera' },
     { id:'facebook', label:'Facebook', icon:'network' },
     { id:'appstore', label:'Play Store / App Store', icon:'appstore' },
-    { id:'booking', label:'Tempahan', icon:'calendar' },
+    { id:'booking', label:'Calendar', icon:'calendar' },
     { id:'pdf', label:'PDF', icon:'doc' },
-    { id:'image', label:'Imej', icon:'image' },
+    { id:'image', label:'Image', icon:'image' },
     { id:'pptx', label:'PPTX', icon:'slides' },
     { id:'audio', label:'Audio', icon:'music' },
     { id:'customurl', label:'URL Custom', icon:'globe' }
@@ -1022,7 +1022,7 @@
         (typeof err === 'string' ? err : 'Gagal memendekkan pautan. Cuba lagi.');
     }finally{
       shortenBtn.disabled = false;
-      shortenBtn.textContent = 'PENDEKKAN SEKARANG';
+      shortenBtn.textContent = 'SHORTEN URL';
     }
   }
 
