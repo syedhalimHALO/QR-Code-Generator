@@ -387,7 +387,7 @@
         <div class="field" id="customLinkField" hidden>
           <label class="field-label" for="customSlugInput">Custom Link</label>
           <div class="prefixed-input">
-            <span class="prefix">is.gd/</span>
+            <span class="prefix">workers.dev/</span>
             <input type="text" id="customSlugInput" placeholder="promo_jun_2026">
           </div>
           <p class="field-help">5–30 aksara — huruf, nombor &amp; underscore sahaja (tiada sengkang -).</p>
@@ -502,7 +502,7 @@
       </section>
     </main>
 
-    <p class="privacy-note">Penjanaan QR berlaku terus dalam pelayar. Untuk fungsi pemendek pautan, URL dihantar melalui Cloudflare Worker ke perkhidmatan is.gd/v.gd.</p>
+    <p class="privacy-note">Penjanaan QR berlaku terus dalam pelayar. Pautan pendek disimpan dan dialihkan melalui Cloudflare Worker anda sendiri.</p>
   </div>
 
 <script>
@@ -974,11 +974,11 @@
     });
   }
 
-  // Cloudflare Worker endpoint — configured for this GitHub Pages site.
+  // Cloudflare Worker URL shortener — configured for this GitHub Pages site.
   // Do not replace this unless the Worker domain changes.
   const SHORTENER_API_URL = 'https://halo-qr-shortener.syedhalimz.workers.dev';
 
-  async function isgdShorten(longUrl, slug){
+  async function shortenWithWorker(longUrl, slug){
     if(SHORTENER_API_URL.includes('REPLACE-WITH-YOUR-WORKER')){
       throw new Error('Cloudflare Worker belum dikonfigurasi. Tukar SHORTENER_API_URL dalam index.html kepada URL workers.dev anda.');
     }
@@ -1039,7 +1039,7 @@
     shortenBtn.textContent = 'MEMPROSES…';
 
     try{
-      const shortUrl = await isgdShorten(longUrl, slug);
+      const shortUrl = await shortenWithWorker(longUrl, slug);
       resultLink.textContent = shortUrl;
       shortenResult.hidden = false;
       shortenResult.dataset.url = shortUrl;
